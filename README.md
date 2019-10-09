@@ -1,1 +1,1 @@
-## Basic React and Redux app for reference
+## Basic React and Redux app for referenc
