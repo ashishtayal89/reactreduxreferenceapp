@@ -1,5 +1,6 @@
 import {
   take,
+  actionChannel,
   takeEvery,
   fork,
   takeLatest,
@@ -15,6 +16,16 @@ export function* takeSaga() {
     console.log(payload);
   }
 }
+
+// This is used to buffer the actions so that the actions are not lost if saga is buisy executing
+// export function* takeActionChannelSaga() {
+//   var chan = yield actionChannel("INCREMENT");
+//   while (true) {
+//     var { payload } = yield take(chan);
+//     yield delay(500);
+//     console.log(payload);
+//   }
+// }
 
 function* takeEveryHandler({ payload }) {
   yield delay(500);

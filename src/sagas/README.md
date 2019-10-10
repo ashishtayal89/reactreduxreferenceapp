@@ -75,3 +75,9 @@
 
    - Take : This effect doesn't create additional thread but pause the original thread. The properties of the action are passed to the running saga. Take is resolved after the reducer is fired, but before re-render.
    - Takeevery : `Take + Fork`. Yes we can consider takeevery as a combination of take and fork. It forks a new thread everytime it encounter a new relevant action.
+
+### Channels
+
+1. Action Channel : This is a cannel which is created so that the actions are not lost if the saga is buisy handling something. This creates a buffer of the actions which are dispatched and helps saga trigger them one by one. Please refer to flowControlSaga.js for an example on this.
+
+2. Generic Channel : It used to facilitate communication between sagas.
