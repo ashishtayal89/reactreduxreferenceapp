@@ -13,7 +13,7 @@ const mapDispatchToProps = dispatch => {
     // dispatching plain actions
     increment: data => dispatch({ type: "INCREMENT", payload: data }),
     decrement: data => dispatch({ type: "DECREMENT", payload: data }),
-    reset: data => dispatch({ type: "RESET", payload: data }),
+    reset: data => dispatch({ type: "RESET_INIT", payload: data }),
     add: () => dispatch({ type: "ADD" }),
     remove: () => dispatch({ type: "REMOVE" })
   };

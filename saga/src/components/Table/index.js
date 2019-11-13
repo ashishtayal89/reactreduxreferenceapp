@@ -13,8 +13,11 @@ export default class Table extends PureComponent {
           <button onClick={() => this.props.decrement("decrement payload")}>
             DECREMENT
           </button>
-          <button onClick={() => this.props.reset("reset payload")}>
-            RESET
+          <button onClick={() => this.props.reset("reset payload 1")}>
+            RESET 1
+          </button>
+          <button onClick={() => this.props.reset("reset payload 2")}>
+            RESET 2
           </button>
           <div>{this.props.counter.counter}</div>
         </div>

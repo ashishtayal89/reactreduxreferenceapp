@@ -6,7 +6,8 @@ import {
   takeLatest,
   delay,
   cancelled,
-  cancel
+  cancel,
+  put
 } from "redux-saga/effects";
 
 export function* takeSaga() {
@@ -48,6 +49,7 @@ function* takeLatestHandler({ type, payload }) {
   try {
     yield delay(500);
     console.log(payload);
+    yield put({ type: "RESET", payload });
   } finally {
     if (cancelled()) {
       console.log(`cancelled ${type}`);
@@ -55,17 +57,31 @@ function* takeLatestHandler({ type, payload }) {
   }
 }
 
-export function* takeLatestSaga() {
-  yield takeLatest("RESET", takeLatestHandler);
-}
+// export function* takeLatestSaga() {
+//   yield takeLatest("RESET_INIT", takeLatestHandler);
+// }
 
 // takeLatest can also be implemented as take + fork + cancel
-// export function* takeLatestUsingTakeAndFork() {
+// export function* takeLatestUsingTakeForkAndCancel() {
 //   while (true) {
-//     var action = yield take("RESET");
+//     var action = yield take("RESET_INIT");
 //     if (forked) {
 //       yield cancel(forked);
 //     }
 //     var forked = yield fork(takeLatestHandler, action);
 //   }
 // }
+
+// A custom implementation to cancel request based on action payload
+export function* takeLatestUsingTakeAndFork() {
+  var forked = {};
+  while (true) {
+    var action = yield take("RESET_INIT");
+    var { payload } = action;
+    if (forked[payload]) {
+      yield cancel(forked[payload]);
+      delete forked[payload];
+    }
+    forked[payload] = yield fork(takeLatestHandler, action);
+  }
+}
