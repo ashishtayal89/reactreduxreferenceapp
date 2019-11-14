@@ -73,7 +73,7 @@ function* takeLatestHandler({ type, payload }) {
 // }
 
 // A custom implementation to cancel request based on action payload
-export function* takeLatestUsingTakeAndFork() {
+export function* takeLatestUsingTakeForkAndCancel() {
   var forked = {};
   while (true) {
     var action = yield take("RESET_INIT");
