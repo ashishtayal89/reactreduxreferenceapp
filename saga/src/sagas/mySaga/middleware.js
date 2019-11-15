@@ -1,3 +1,7 @@
+import { effectNames, take, fork, cancel } from "./effects";
+
+const listningSagas = {};
+
 export function runSaga(saga, ...arg) {
   let sagaInstance = saga(...arg);
   if (isIterable(sagaInstance)) {
@@ -13,35 +17,56 @@ function isIterable(obj) {
   return typeof obj[Symbol.iterator] === "function";
 }
 
-function iterateSaga(saga, sagaName) {
+function iterateSaga(saga, sagaName, arg) {
   let yieldValue;
   do {
-    const iteration = saga.next(yieldValue);
+    const iteration = arg ? saga.next(...arg) : saga.next(yieldValue);
     var isDone = iteration.done;
     var value = iteration.value;
     const effect = value ? value.effect : undefined;
     if (effect) {
       switch (effect) {
-        case "delay": {
+        case effectNames.DELAY: {
           const { timeStamp } = value;
           setTimeout(iterateSaga, timeStamp, saga, sagaName);
           return;
         }
-        case "call": {
+        case effectNames.CALL: {
           yieldValue = handleCall(value);
           break;
         }
-        case "spawn": {
+        case effectNames.SPAWN: {
           handleSpawnAndFork(value);
           break;
         }
-        case "fork": {
+        case effectNames.FORK: {
           yieldValue = handleSpawnAndFork(value);
           break;
         }
-        case "cancel": {
+        case effectNames.CANCEL: {
           const { task } = value;
           clearTimeout(task);
+          break;
+        }
+        case effectNames.TAKE: {
+          const { action } = value;
+          if (listningSagas[action])
+            listningSagas[action].push({ saga, sagaName });
+          else listningSagas[action] = [{ saga, sagaName }];
+          return;
+        }
+        case effectNames.TAKELATEST: {
+          const { action, saga } = value;
+          runSaga(handleTakeLatest, action, saga);
+          break;
+        }
+        case effectNames.TAKEEVERY: {
+          const { action, saga } = value;
+          runSaga(handleTakeEvery, action, saga);
+          break;
+        }
+        case effectNames.PUT: {
+          handlePut(value);
           break;
         }
         default:
@@ -75,4 +100,32 @@ function handleSpawnAndFork(value) {
     );
   }
   return task;
+}
+
+function handlePut(value) {
+  const { action, arg } = value;
+  const sagas = listningSagas[action];
+  if (sagas && sagas.length) {
+    delete listningSagas[action];
+    for (let { saga, sagaName } of sagas) {
+      iterateSaga(saga, sagaName, arg);
+    }
+  }
+}
+
+export function* handleTakeLatest(action, saga) {
+  while (true) {
+    var action = yield take(action);
+    if (forked) {
+      yield cancel(forked);
+    }
+    var forked = yield fork(saga, action);
+  }
+}
+
+export function* handleTakeEvery(action, saga) {
+  while (true) {
+    var action = yield take(action);
+    yield fork(saga, action);
+  }
 }

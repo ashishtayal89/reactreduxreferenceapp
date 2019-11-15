@@ -1,5 +1,6 @@
 import { runSaga } from "./middleware";
-import { saga1, saga2 } from "./sagas";
+import * as sagas from "./sagas";
 
-// runSaga(saga1);
-runSaga(saga2);
+for (let key in sagas) {
+  runSaga(sagas[key]);
+}
