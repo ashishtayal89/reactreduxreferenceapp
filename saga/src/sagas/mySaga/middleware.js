@@ -1,8 +1,8 @@
 export function runSaga(saga, ...arg) {
   let sagaInstance = saga(...arg);
-  let sagaName = saga.name;
   if (isIterable(sagaInstance)) {
-    executeSaga(sagaInstance, sagaName);
+    let sagaName = saga.name;
+    iterateSaga(sagaInstance, sagaName);
   }
 }
 
@@ -13,37 +13,35 @@ function isIterable(obj) {
   return typeof obj[Symbol.iterator] === "function";
 }
 
-function executeSaga(saga, sagaName) {
+function iterateSaga(saga, sagaName) {
+  let yieldValue;
   do {
-    const iteration = saga.next();
+    const iteration = saga.next(yieldValue);
     var isDone = iteration.done;
-    const value = iteration.value;
+    var value = iteration.value;
     const effect = value ? value.effect : undefined;
     if (effect) {
       switch (effect) {
         case "delay": {
           const { timeStamp } = value;
-          setTimeout(executeSaga, timeStamp, saga, sagaName);
+          setTimeout(iterateSaga, timeStamp, saga, sagaName);
           return;
         }
         case "call": {
-          const { func, arg } = value;
-          if (typeof func == "function") {
-            func(...arg);
-          }
+          yieldValue = handleCall(value);
           break;
         }
         case "spawn": {
-          const { func, arg } = value;
-          if (typeof func == "function") {
-            setTimeout(
-              () => {
-                runSaga(func, ...arg);
-              },
-              0,
-              arg
-            );
-          }
+          handleSpawnAndFork(value);
+          break;
+        }
+        case "fork": {
+          yieldValue = handleSpawnAndFork(value);
+          break;
+        }
+        case "cancel": {
+          const { task } = value;
+          clearTimeout(task);
           break;
         }
         default:
@@ -52,4 +50,29 @@ function executeSaga(saga, sagaName) {
     }
   } while (!isDone);
   console.log(`Done Executing ${sagaName} saga`);
+  return value;
+}
+
+function handleCall(value) {
+  const { func, arg } = value;
+  let sagaResponse;
+  if (typeof func == "function") {
+    sagaResponse = runSaga(func, ...arg);
+  }
+  return sagaResponse;
+}
+
+function handleSpawnAndFork(value) {
+  const { func, arg } = value;
+  let task;
+  if (typeof func == "function") {
+    task = setTimeout(
+      () => {
+        runSaga(func, ...arg);
+      },
+      0,
+      arg
+    );
+  }
+  return task;
 }
