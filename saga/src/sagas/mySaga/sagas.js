@@ -44,7 +44,7 @@ export function* saga5() {
 
 // Saga to test TakeEvery and TakeLatest
 // export function* takeLatestSaga() {
-//   yield takeLatest("RESET", saga2);
+//   yield takeLatest("RESET", saga5);
 // }
 
 // export function* testTakeLatest() {
@@ -58,8 +58,5 @@ export function* takeEverySaga() {
 
 export function* testTakeEvery1() {
   yield put("RESET1");
-}
-
-export function* testTakeEvery2() {
   yield put("RESET1");
 }

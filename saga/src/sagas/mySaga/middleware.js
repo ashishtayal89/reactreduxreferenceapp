@@ -20,7 +20,8 @@ function isIterable(obj) {
 function iterateSaga(saga, sagaName, arg) {
   let yieldValue;
   do {
-    const iteration = arg ? saga.next(...arg) : saga.next(yieldValue);
+    const iteration =
+      arg && arg.length ? saga.next(...arg) : saga.next(yieldValue);
     var isDone = iteration.done;
     var value = iteration.value;
     const effect = value ? value.effect : undefined;
@@ -115,17 +116,17 @@ function handlePut(value) {
 
 export function* handleTakeLatest(action, saga) {
   while (true) {
-    var action = yield take(action);
-    if (forked) {
-      yield cancel(forked);
+    yield take(action);
+    if (task) {
+      yield cancel(task);
     }
-    var forked = yield fork(saga, action);
+    var task = yield fork(saga);
   }
 }
 
 export function* handleTakeEvery(action, saga) {
   while (true) {
-    var action = yield take(action);
-    yield fork(saga, action);
+    yield take(action);
+    yield fork(saga);
   }
 }
