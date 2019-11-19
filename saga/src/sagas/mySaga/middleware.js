@@ -6,8 +6,9 @@ export function runSaga(saga, ...arg) {
   let sagaInstance = saga(...arg);
   if (isIterable(sagaInstance)) {
     let sagaName = saga.name;
-    iterateSaga(sagaInstance, sagaName);
+    return iterateSaga(sagaInstance, sagaName);
   }
+  return sagaInstance;
 }
 
 function isIterable(obj) {
@@ -34,6 +35,10 @@ function iterateSaga(saga, sagaName, arg) {
         }
         case effectNames.CALL: {
           yieldValue = handleCall(value);
+          if (yieldValue instanceof Promise) {
+            yieldValue.then(value => iterateSaga(saga, sagaName, [value]));
+            return;
+          }
           break;
         }
         case effectNames.SPAWN: {

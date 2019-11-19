@@ -12,6 +12,7 @@ import {
 
 function logValue(value) {
   console.log(value);
+  return new Promise(resolve => resolve(value));
 }
 
 // export function* saga1() {
@@ -26,8 +27,13 @@ function logValue(value) {
 //   yield call(logValue, 1);
 // }
 
-export function* saga5() {
+function* saga5() {
   yield call(logValue, 2);
+}
+
+export function* testCall() {
+  var value = yield call(logValue, 5);
+  console.log(value);
 }
 
 // export function* saga3() {
@@ -52,11 +58,11 @@ export function* saga5() {
 //   yield put("RESET");
 // }
 
-export function* takeEverySaga() {
-  yield takeEvery("RESET1", saga5);
-}
+// export function* takeEverySaga() {
+//   yield takeEvery("RESET1", saga5);
+// }
 
-export function* testTakeEvery1() {
-  yield put("RESET1");
-  yield put("RESET1");
-}
+// export function* testTakeEvery1() {
+//   yield put("RESET1");
+//   yield put("RESET1");
+// }
